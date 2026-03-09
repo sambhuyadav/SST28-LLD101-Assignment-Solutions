@@ -1,40 +1,38 @@
 package com.example.map;
 
 /**
- * CURRENT STATE (BROKEN ON PURPOSE):
- * A style object exists, but is mutable and is created per marker,
- * even when thousands of markers share the same config.
+ * Flyweight Object — holds INTRINSIC (shared, immutable) state.
  *
- * TODO (student):
- * - Make this an immutable Flyweight (final fields, no setters).
+ * Why immutable?
+ *   Because this single object will be shared by potentially thousands of
+ *   MapMarker instances. If any one marker could mutate it, every marker
+ *   sharing the same style would be silently corrupted.
+ *
+ * Immutability is enforced by:
+ *   1. All fields are declared `final`.
+ *   2. No setters are provided.
+ *   3. The class itself is declared `final` so no subclass can re-open it.
  */
-public class MarkerStyle {
+public final class MarkerStyle {
 
-    private String shape;   // e.g., PIN, CIRCLE, SQUARE
-    private String color;   // e.g., RED, BLUE, GREEN
-    private int size;       // e.g., 10..20
-    private boolean filled; // filled vs outline
+    // --- Intrinsic State (shared across many MapMarkers) ---
+    private final String color;
+    private final String iconPath;
+    private final int size;
 
-    public MarkerStyle(String shape, String color, int size, boolean filled) {
-        this.shape = shape;
-        this.color = color;
-        this.size = size;
-        this.filled = filled;
+    public MarkerStyle(String color, String iconPath, int size) {
+        this.color    = color;
+        this.iconPath = iconPath;
+        this.size     = size;
     }
 
-    public String getShape() { return shape; }
-    public String getColor() { return color; }
-    public int getSize() { return size; }
-    public boolean isFilled() { return filled; }
-
-    // BROKEN: setters should go away after immutability refactor
-    public void setShape(String shape) { this.shape = shape; }
-    public void setColor(String color) { this.color = color; }
-    public void setSize(int size) { this.size = size; }
-    public void setFilled(boolean filled) { this.filled = filled; }
+    // Read-only accessors — no setters!
+    public String getColor()    { return color;    }
+    public String getIconPath() { return iconPath; }
+    public int    getSize()     { return size;     }
 
     @Override
     public String toString() {
-        return shape + "|" + color + "|" + size + "|" + (filled ? "F" : "O");
+        return "MarkerStyle{color='" + color + "', iconPath='" + iconPath + "', size=" + size + "}";
     }
 }

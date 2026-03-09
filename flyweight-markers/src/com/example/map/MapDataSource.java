@@ -2,43 +2,50 @@ package com.example.map;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 /**
- * Generates markers for demo/testing.
+ * Simulates loading map-marker data from a database or API.
  *
- * CURRENT STATE (BROKEN ON PURPOSE):
- * - Creates new MarkerStyle per MapMarker via MapMarker constructor.
+ * BEFORE the refactor:
+ *   Each marker was constructed with `new MarkerStyle(...)` inline.
+ *   1000 restaurant markers → 1000 identical MarkerStyle objects in RAM.
  *
- * TODO (student):
- * - After introducing MarkerStyleFactory, refactor so identical styles are shared.
- * - Suggested approach:
- *   1) Change MapMarker to accept MarkerStyle directly
- *   2) Use MarkerStyleFactory.get(shape,color,size,filled) here
+ * AFTER the refactor:
+ *   Each marker requests its style via MarkerStyleFactory.getStyle(...).
+ *   1000 restaurant markers → 1 shared MarkerStyle object in RAM.
+ *
+ * The factory call looks like more work, but it is O(1) — just a HashMap
+ * lookup — and the memory savings are dramatic on large datasets.
  */
 public class MapDataSource {
 
-    private static final String[] SHAPES = {"PIN", "CIRCLE", "SQUARE"};
-    private static final String[] COLORS = {"RED", "BLUE", "GREEN", "ORANGE"};
-    private static final int[] SIZES = {10, 12, 14, 16};
+    public static List<MapMarker> loadMarkers() {
+        List<MapMarker> markers = new ArrayList<>();
 
-    public List<MapMarker> loadMarkers(int count) {
-        Random rnd = new Random(7);
-        List<MapMarker> out = new ArrayList<>(count);
-
-        for (int i = 0; i < count; i++) {
-            double lat = 12.9000 + rnd.nextDouble() * 0.2000;
-            double lng = 77.5000 + rnd.nextDouble() * 0.2000;
-            String label = "M-" + i;
-
-            // Force many duplicates by choosing from small pools
-            String shape = SHAPES[rnd.nextInt(SHAPES.length)];
-            String color = COLORS[rnd.nextInt(COLORS.length)];
-            int size = SIZES[rnd.nextInt(SIZES.length)];
-            boolean filled = rnd.nextBoolean();
-
-            out.add(new MapMarker(lat, lng, label, shape, color, size, filled));
+        // --- Restaurants (100 markers, all sharing ONE MarkerStyle) ---
+        for (int i = 0; i < 100; i++) {
+            MarkerStyle style = MarkerStyleFactory.getStyle("red", "/icons/restaurant.png", 24);
+            markers.add(new MapMarker(12.90 + i * 0.001, 77.60 + i * 0.001, "Restaurant " + i, style));
         }
-        return out;
+
+        // --- Hospitals (50 markers, all sharing ONE MarkerStyle) ---
+        for (int i = 0; i < 50; i++) {
+            MarkerStyle style = MarkerStyleFactory.getStyle("blue", "/icons/hospital.png", 30);
+            markers.add(new MapMarker(12.95 + i * 0.001, 77.65 + i * 0.001, "Hospital " + i, style));
+        }
+
+        // --- Schools (75 markers, all sharing ONE MarkerStyle) ---
+        for (int i = 0; i < 75; i++) {
+            MarkerStyle style = MarkerStyleFactory.getStyle("green", "/icons/school.png", 20);
+            markers.add(new MapMarker(13.00 + i * 0.001, 77.70 + i * 0.001, "School " + i, style));
+        }
+
+        // --- Parks (60 markers, all sharing ONE MarkerStyle) ---
+        for (int i = 0; i < 60; i++) {
+            MarkerStyle style = MarkerStyleFactory.getStyle("darkgreen", "/icons/park.png", 22);
+            markers.add(new MapMarker(13.05 + i * 0.001, 77.75 + i * 0.001, "Park " + i, style));
+        }
+
+        return markers;
     }
 }

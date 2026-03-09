@@ -8,14 +8,12 @@ import java.util.List;
 public class App {
 
     public static void main(String[] args) {
-        int n = 30_000;
+        List<MapMarker> markers = MapDataSource.loadMarkers();
 
-        MapDataSource ds = new MapDataSource();
-        List<MapMarker> markers = ds.loadMarkers(n);
+        MapRenderer.renderAll(markers);
 
-        new MapRenderer().render(markers);
-
-        System.out.println();
+        System.out.println("\nFactory created " + MarkerStyleFactory.getCacheSize()
+                + " unique style object(s) for " + markers.size() + " markers.");
         System.out.println("Run QuickCheck to verify Flyweight sharing:");
         System.out.println("  java com.example.map.QuickCheck");
     }
